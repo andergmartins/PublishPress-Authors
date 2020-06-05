@@ -153,10 +153,10 @@ if (!class_exists('MA_Multiple_Authors')) {
 
             // Filters the list of authors in the Improved Notifications add-on.
             add_filter(
-                'publishpress_notif_workflow_receiver_post_authors',
-                [$this, 'filter_workflow_receiver_post_authors'],
+                'publishpress_notifications_receiver_post_authors',
+                [$this, 'filter_publishpress_notifications_receiver_post_authors'],
                 10,
-                3
+                2
             );
 
             add_filter('multiple_authors_validate_module_settings', [$this, 'validate_module_settings'], 10, 2);
@@ -848,26 +848,26 @@ if (!class_exists('MA_Multiple_Authors')) {
          * Filters the list of receivers in the notification workflows provided
          * by the improved notifications add-on.
          *
-         * @param array $receivers
-         * @param WP_Post $workflow
-         * @param array $args
+         * @param int $author_id
+         * @param int $post_id
          *
          * @return array
          */
-        public function filter_workflow_receiver_post_authors($receivers, $workflow, $args)
+        public function filter_publishpress_notifications_receiver_post_authors($author_id, $post_id)
         {
             if (!function_exists('multiple_authors')) {
                 require_once PP_AUTHORS_SRC_PATH . 'functions/template-tags.php';
             }
 
-            $authors_iterator = new Authors_Iterator($args['post']->ID);
+            $authors_iterator = new Authors_Iterator($post_id);
+            $authors          = [];
             while ($authors_iterator->iterate()) {
-                if (!in_array($authors_iterator->current_author->ID, $receivers)) {
-                    $receivers[] = $authors_iterator->current_author->ID;
+                if (!$authors_iterator->current_author->is_guest()) {
+                    $authors[] = $authors_iterator->current_author->ID;
                 }
             }
 
-            return $receivers;
+            return $authors;
         }
 
         /**
